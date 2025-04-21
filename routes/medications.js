@@ -20,6 +20,8 @@ router.post("/", [auth, adminAuth], async (req, res) => {
   const medication = new Medication({
     name: req.body.name,
     dosage: req.body.dosage,
+    form: req.body.form,
+    route: req.body.route,
     manufacturer: req.body.manufacturer,
     notes: req.body.notes,
   });
@@ -43,6 +45,8 @@ router.patch("/:id", [auth, adminAuth], async (req, res) => {
     // Update fields that are present in the request
     if (req.body.name) medication.name = req.body.name;
     if (req.body.dosage) medication.dosage = req.body.dosage;
+    if (req.body.form) medication.form = req.body.form;
+    if (req.body.route) medication.route = req.body.route;
     if (req.body.manufacturer) medication.manufacturer = req.body.manufacturer;
     if (req.body.notes) medication.notes = req.body.notes;
 
@@ -64,6 +68,8 @@ router.put("/:id", [auth, adminAuth], async (req, res) => {
     // Replace all fields with new data
     medication.name = req.body.name;
     medication.dosage = req.body.dosage;
+    medication.form = req.body.form;
+    medication.route = req.body.route;
     medication.manufacturer = req.body.manufacturer;
     medication.notes = req.body.notes;
 

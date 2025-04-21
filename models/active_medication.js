@@ -60,7 +60,7 @@ const activeMedicationSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  notes: String,
+  instructions: String,
   isActive: {
     type: Boolean,
     default: true,

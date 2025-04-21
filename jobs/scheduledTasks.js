@@ -27,7 +27,6 @@ async function checkUpcomingAppointments() {
     }).populate("serviceUser", "name group dateOfBirth nhsNumber");
 
     console.log(`Found ${upcomingAppointments.length} upcoming appointments`);
-    console.log(upcomingAppointments);
 
     // Send notifications for each appointment
     for (const appointment of upcomingAppointments) {

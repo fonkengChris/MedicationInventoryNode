@@ -9,7 +9,17 @@ const medicationSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  
+  form: {
+    type: String,
+    required: true,
+    enum: ["tablet", "capsule", "injection", "cream", "solution"],
+  },
+  route: {
+    type: String,
+    required: true,
+    enum: ["oral", "intravenous", "topical"],
+  },
+
   manufacturer: String,
   location: String,
   notes: String,
