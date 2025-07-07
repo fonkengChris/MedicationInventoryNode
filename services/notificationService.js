@@ -206,6 +206,74 @@ class NotificationService {
     }
   }
 
+  static async notifyMedicationAnomaly(medicationSummary, anomaly) {
+    try {
+      const subject = `Medication Anomaly Alert: ${medicationSummary.medication.name}`;
+      const emailMessage = `
+        Anomaly detected for ${medicationSummary.medication.name}
+        Service User: ${medicationSummary.serviceUser.name}
+        Type: ${anomaly.type}
+        Message: ${anomaly.message}
+        Week: ${new Date(anomaly.week).toLocaleDateString()}
+      `;
+
+      // Get all admins and users who have the service user's group in their groups array
+      const users = await User.find({
+        $or: [
+          { role: { $in: ["admin", "superAdmin"] } },
+          {
+            role: "user",
+            groups: { $in: [medicationSummary.serviceUser.group] },
+            "notificationPreferences.sms.anomalies": true,
+          },
+        ],
+      });
+
+      // Send notifications to all relevant users
+      for (const user of users) {
+        // Check rate limit for this user with medication ID
+        if (
+          await this.checkRateLimit(
+            user._id,
+            "anomaly",
+            medicationSummary.medication._id.toString()
+          )
+        ) {
+          // Send email if enabled
+          if (user.notificationPreferences.email.anomalies) {
+            await this.sendEmail(user.email, subject, emailMessage);
+          }
+
+          // Send SMS if enabled and phone number exists
+          if (user.notificationPreferences.sms.anomalies && user.phoneNumber) {
+            await this.sendSMS(user.phoneNumber, anomaly.message);
+          }
+        }
+      }
+
+      // Send push notifications to users who have FCM tokens
+      const tokens = users
+        .filter((user) => user.fcmToken)
+        .map((user) => user.fcmToken);
+
+      if (tokens.length > 0) {
+        await FirebaseService.sendPushNotification(
+          tokens,
+          "Medication Anomaly Alert",
+          anomaly.message,
+          {
+            type: "MEDICATION_ANOMALY",
+            medicationId: medicationSummary.medication._id.toString(),
+            anomalyType: anomaly.type,
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Failed to send anomaly notification:", error);
+      throw error;
+    }
+  }
+
   static async sendEmail(to, subject, message) {
     try {
       await transporter.sendMail({

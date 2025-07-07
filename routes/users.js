@@ -67,7 +67,10 @@ router.post("/register", async (req, res) => {
 // Get all users - admin and superAdmin only
 router.get("/", [auth, adminAuth], async (req, res) => {
   try {
-    const users = await User.find().select("-password").sort({ username: 1 });
+    const users = await User.find()
+      .select("-password")
+      .populate("groups", "name description")
+      .sort({ username: 1 });
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -90,7 +93,9 @@ router.get("/:id", auth, async (req, res) => {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    const user = await User.findById(req.params.id).select("-password");
+    const user = await User.findById(req.params.id)
+      .select("-password")
+      .populate("groups", "name description");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -247,6 +252,37 @@ router.post("/fcm-token", auth, async (req, res) => {
     res.json({ message: "FCM token updated successfully" });
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+// Debug route to check user groups - remove in production
+router.get("/debug/:id", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .populate("groups", "name description")
+      .lean();
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Also get the raw groups array to see what's stored
+    const rawUser = await User.findById(req.params.id).lean();
+
+    res.json({
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        groups: user.groups,
+        rawGroups: rawUser.groups,
+      },
+      groupCount: user.groups ? user.groups.length : 0,
+      rawGroupCount: rawUser.groups ? rawUser.groups.length : 0,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 

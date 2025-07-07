@@ -2,6 +2,7 @@ const cron = require("node-cron");
 const Appointment = require("../models/appointment");
 const ActiveMedication = require("../models/active_medication");
 const NotificationService = require("../services/notificationService");
+const DailyStockService = require("../services/dailyStockService");
 
 // Function to check upcoming appointments
 async function checkUpcomingAppointments() {
@@ -97,6 +98,17 @@ function initializeScheduledTasks() {
   cron.schedule("0 9 * * *", () => {
     console.log("Running scheduled medication check");
     checkMedicationStock();
+  });
+
+  // Record daily stock levels at midnight
+  cron.schedule("0 0 * * *", async () => {
+    console.log("Recording daily stock levels:", new Date());
+    try {
+      await DailyStockService.recordDailyStock();
+      console.log("Daily stock levels recorded successfully");
+    } catch (error) {
+      console.error("Failed to record daily stock levels:", error);
+    }
   });
 
   console.log("Scheduled tasks initialized");

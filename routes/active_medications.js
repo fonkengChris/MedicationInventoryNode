@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const ActiveMedication = require("../models/active_medication");
 const MedicationUpdate = require("../models/medication_update");
+const DailyStock = require("../models/daily_stock");
+const DailyStockService = require("../services/dailyStockService");
 const auth = require("../middleware/auth");
 const adminAuth = require("../middleware/adminAuth");
 const jwt = require("jsonwebtoken");
@@ -313,12 +315,45 @@ router.put("/:id", [auth], async (req, res) => {
       changes.quantityInStock = {
         oldValue: oldValues.quantityInStock,
         newValue: req.body.quantityInStock,
-        note: req.body.stockChangeNote, // Include the note from the request
+        note: req.body.stockChangeNote,
       };
       updateType =
         req.body.quantityInStock > oldValues.quantityInStock
           ? "MedStock Increase"
           : "MedStock Decrease";
+
+      // Record the stock change using DailyStockService
+      const quantity = Math.abs(
+        req.body.quantityInStock - oldValues.quantityInStock
+      );
+      let changeType = "Other";
+
+      if (req.body.stockChangeNote) {
+        const note = req.body.stockChangeNote.toLowerCase();
+        if (note.includes("pharmacy") && note.includes("received")) {
+          changeType = "From Pharmacy";
+        } else if (note.includes("administered")) {
+          changeType = "Quantity Administered";
+        } else if (note.includes("leaving") && note.includes("home")) {
+          changeType = "Leaving Home";
+        } else if (note.includes("returning") && note.includes("home")) {
+          changeType = "Returning Home";
+        } else if (note.includes("returned") && note.includes("pharmacy")) {
+          changeType = "Returned to Pharmacy";
+        } else if (note.includes("lost")) {
+          changeType = "Lost";
+        } else if (note.includes("damaged")) {
+          changeType = "Damaged";
+        }
+      }
+
+      await DailyStockService.recordQuantityChange(
+        medication._id,
+        userId,
+        changeType,
+        quantity,
+        req.body.stockChangeNote
+      );
     }
 
     if (
