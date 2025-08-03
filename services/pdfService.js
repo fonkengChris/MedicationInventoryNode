@@ -1,160 +1,116 @@
 const PDFDocument = require("pdfkit");
 const PDFTable = require("pdfkit-table");
-const WeeklySummary = require("../models/weekly_summary");
 const TrendAnalysisService = require("./trendAnalysisService");
 
 class PDFService {
-  static async generateWeeklySummaryPDF(summaryId) {
-    try {
-      const summary = await WeeklySummary.findById(summaryId).populate({
-        path: "summaries.changes.updatedBy",
-        select: "username email",
-      });
+  /**
+   * Generate PDF for a summary
+   */
+  static async generateSummaryPdf(summary) {
+    return new Promise((resolve, reject) => {
+      try {
+        const doc = new PDFDocument({
+          size: "A4",
+          margin: 50,
+        });
 
-      if (!summary) {
-        throw new Error("Summary not found");
-      }
+        const chunks = [];
+        doc.on("data", (chunk) => chunks.push(chunk));
+        doc.on("end", () => resolve(Buffer.concat(chunks)));
 
-      // Create a new PDF document
-      const doc = new PDFDocument();
-      const buffers = [];
+        // Add header
+        doc
+          .fontSize(24)
+          .font("Helvetica-Bold")
+          .text("Weekly Medication Summary", { align: "center" });
 
-      // Collect PDF data
-      doc.on("data", (buffer) => buffers.push(buffer));
-
-      // Set up the document
-      doc.fontSize(20).text("Weekly Medication Summary", { align: "center" });
-      doc.moveDown();
-      doc
-        .fontSize(12)
-        .text(
-          `Period: ${new Date(
-            summary.startDate
-          ).toLocaleDateString()} - ${new Date(
-            summary.endDate
-          ).toLocaleDateString()}`
-        );
-      doc.moveDown();
-
-      // Add each summary
-      for (const item of summary.summaries) {
-        // Service User Information
-        doc.fontSize(14).text(`Service User: ${item.serviceUser.name}`);
-        doc.fontSize(12).text(`NHS Number: ${item.serviceUser.nhsNumber}`);
         doc.moveDown();
 
-        // Medication Information
-        doc.fontSize(14).text(`Medication: ${item.medication.name}`);
+        // Add date range
+        doc
+          .fontSize(14)
+          .font("Helvetica")
+          .text(
+            `Period: ${new Date(summary.startDate).toLocaleDateString()} - ${new Date(
+              summary.endDate
+            ).toLocaleDateString()}`,
+            { align: "center" }
+          );
+
+        doc.moveDown(2);
+
+        // Add summary statistics
+        doc.fontSize(16).font("Helvetica-Bold").text("Summary Statistics");
+        doc.moveDown();
+
+        const totalMedications = summary.summaries.length;
+        let totalStockChanges = 0;
+        let totalAdministered = 0;
+
+        summary.summaries.forEach((med) => {
+          totalStockChanges +=
+            med.cumulativeChanges.fromPharmacy +
+            med.cumulativeChanges.returningHome -
+            med.cumulativeChanges.quantityAdministered -
+            med.cumulativeChanges.leavingHome;
+          totalAdministered += med.cumulativeChanges.quantityAdministered;
+        });
+
         doc
           .fontSize(12)
+          .font("Helvetica")
+          .text(`Total Medications: ${totalMedications}`)
+          .text(`Total Stock Changes: ${totalStockChanges}`)
+          .text(`Total Administered: ${totalAdministered}`);
+
+        doc.moveDown(2);
+
+        // Add detailed medication information
+        doc.fontSize(16).font("Helvetica-Bold").text("Medication Details");
+        doc.moveDown();
+
+        summary.summaries.forEach((med, index) => {
+          doc
+            .fontSize(14)
+            .font("Helvetica-Bold")
+            .text(`${index + 1}. ${med.medication.medicationName}`);
+
+          doc
+            .fontSize(10)
+            .font("Helvetica")
+            .text(`Service User: ${med.serviceUser.name} (NHS: ${med.serviceUser.nhsNumber})`)
+            .text(`Dosage: ${med.medication.quantityPerDose} per dose, ${med.medication.dosesPerDay} doses/day`)
+            .text(`Stock Levels: Initial ${med.stockLevels.initial} → Final ${med.stockLevels.final}`)
+            .text(`Days Remaining: ${med.stockLevels.daysRemaining}`);
+
+          // Stock changes
+          doc.text("Stock Changes:");
+          doc
+            .fontSize(9)
+            .text(`  From Pharmacy: ${med.cumulativeChanges.fromPharmacy}`)
+            .text(`  Administered: ${med.cumulativeChanges.quantityAdministered}`)
+            .text(`  Leaving Home: ${med.cumulativeChanges.leavingHome}`)
+            .text(`  Returning Home: ${med.cumulativeChanges.returningHome}`)
+            .text(`  Returned to Pharmacy: ${med.cumulativeChanges.returnedToPharmacy}`)
+            .text(`  Lost/Damaged: ${med.cumulativeChanges.lost + med.cumulativeChanges.damaged}`);
+
+          doc.moveDown();
+        });
+
+        // Add footer
+        doc
+          .fontSize(10)
+          .font("Helvetica")
           .text(
-            `Dosage: ${item.medication.dosage.amount} ${item.medication.dosage.unit}`
+            `Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
+            { align: "center" }
           );
-        doc.moveDown();
 
-        // Stock Summary Table
-        const stockTable = {
-          headers: ["Category", "Quantity"],
-          rows: [
-            ["Initial Stock", item.totals.initialStock],
-            ["From Pharmacy", item.totals.fromPharmacy],
-            ["Quantity Administered", item.totals.quantityAdministered],
-            ["Leaving Home", item.totals.leavingHome],
-            ["Returning Home", item.totals.returningHome],
-            ["Returned to Pharmacy", item.totals.returnedToPharmacy],
-            ["Lost", item.totals.lost],
-            ["Damaged", item.totals.damaged],
-            ["Other", item.totals.other],
-            ["Current Stock", item.totals.currentStock],
-          ],
-        };
-
-        await doc.table(stockTable, {
-          prepareHeader: () => doc.font("Helvetica-Bold").fontSize(12),
-          prepareRow: () => doc.font("Helvetica").fontSize(10),
-        });
-        doc.moveDown();
-
-        // Trend Analysis
-        const trends = await TrendAnalysisService.analyzeTrends(
-          item.medication._id
-        );
-
-        if (trends.stockTrend) {
-          doc.fontSize(14).text("Stock Trend Analysis");
-          doc.fontSize(12);
-          doc.text(
-            `Direction: ${trends.stockTrend.direction} (${Math.round(
-              trends.stockTrend.percentage
-            )}% change)`
-          );
-          doc.text(`Average Stock: ${Math.round(trends.stockTrend.average)}`);
-          doc.moveDown();
-        }
-
-        if (trends.usageTrend) {
-          doc.fontSize(14).text("Usage Trend Analysis");
-          doc.fontSize(12);
-          doc.text(
-            `Direction: ${trends.usageTrend.direction} (${Math.round(
-              trends.usageTrend.percentage
-            )}% change)`
-          );
-          doc.text(`Average Usage: ${Math.round(trends.usageTrend.average)}`);
-          doc.moveDown();
-        }
-
-        // Anomalies
-        if (trends.anomalies.length > 0) {
-          doc.fontSize(14).text("Detected Anomalies");
-          doc.fontSize(12);
-          trends.anomalies.forEach((anomaly) => {
-            doc.text(`• ${anomaly.message}`);
-          });
-          doc.moveDown();
-        }
-
-        // Individual Changes
-        if (item.changes.length > 0) {
-          doc.fontSize(14).text("Change History");
-          const changesTable = {
-            headers: ["Date", "Type", "Quantity", "Note", "Updated By"],
-            rows: item.changes.map((change) => [
-              new Date(change.timestamp).toLocaleString(),
-              change.type,
-              change.quantity,
-              change.note || "",
-              change.updatedBy.username,
-            ]),
-          };
-
-          await doc.table(changesTable, {
-            prepareHeader: () => doc.font("Helvetica-Bold").fontSize(12),
-            prepareRow: () => doc.font("Helvetica").fontSize(10),
-          });
-        }
-
-        // Add a page break if not the last item
-        if (item !== summary.summaries[summary.summaries.length - 1]) {
-          doc.addPage();
-        }
+        doc.end();
+      } catch (error) {
+        reject(error);
       }
-
-      // Finalize the PDF
-      doc.end();
-
-      // Return a promise that resolves with the PDF buffer
-      return new Promise((resolve, reject) => {
-        doc.on("end", () => {
-          const pdfBuffer = Buffer.concat(buffers);
-          resolve(pdfBuffer);
-        });
-        doc.on("error", reject);
-      });
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      throw error;
-    }
+    });
   }
 }
 
