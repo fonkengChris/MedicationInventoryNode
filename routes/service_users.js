@@ -8,8 +8,15 @@ const superAdminAuth = require("../middleware/superAdminAuth");
 // Get all service users - accessible to all authenticated users
 router.get("/", auth, async (req, res) => {
   try {
-    const serviceUsers = await ServiceUser.find().populate("group");
-    res.json(serviceUsers);
+    const serviceUsers = await ServiceUser.find().populate({
+      path: "group",
+      options: { strictPopulate: false }
+    });
+    
+    // Filter out any service users with null groups to prevent frontend errors
+    const validServiceUsers = serviceUsers.filter(user => user.group !== null);
+    
+    res.json(validServiceUsers);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
