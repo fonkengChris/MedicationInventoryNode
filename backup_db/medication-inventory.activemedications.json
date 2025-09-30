@@ -1,0 +1,218 @@
+[{
+  "_id": {
+    "$oid": "67b11f5c170bb3cd44eece0f"
+  },
+  "serviceUser": {
+    "$oid": "67b0f16ae4dacd8705e77331"
+  },
+  "medicationName": "Diazepam",
+  "dosage": {
+    "amount": 2,
+    "unit": "mg"
+  },
+  "quantityInStock": 31,
+  "quantityPerDose": 1.9,
+  "frequency": "Twice daily ",
+  "startDate": {
+    "$date": "2025-02-15T00:00:00.000Z"
+  },
+  "endDate": null,
+  "prescribedBy": "G.P",
+  "isActive": true,
+  "updatedBy": {
+    "$oid": "67ad31646e053bcd1bf20315"
+  },
+  "lastUpdated": {
+    "$date": "2025-08-03T02:51:52.745Z"
+  },
+  "__v": 0,
+  "dosesPerDay": 1,
+  "instructions": "Medication leaving the home"
+},
+{
+  "_id": {
+    "$oid": "67b12c53170bb3cd44eece1c"
+  },
+  "serviceUser": {
+    "$oid": "67b0f234e4dacd8705e77335"
+  },
+  "medicationName": "Sertraline",
+  "dosage": {
+    "amount": 50,
+    "unit": "mg"
+  },
+  "quantityInStock": 53,
+  "quantityPerDose": 2,
+  "frequency": "Once daily ",
+  "startDate": {
+    "$date": "2025-02-16T00:00:00.000Z"
+  },
+  "endDate": null,
+  "prescribedBy": "G.P",
+  "isActive": true,
+  "updatedBy": {
+    "$oid": "67ad31646e053bcd1bf20315"
+  },
+  "lastUpdated": {
+    "$date": "2025-05-24T18:39:42.722Z"
+  },
+  "__v": 0,
+  "dosesPerDay": "1",
+  "instructions": "Notes"
+},
+{
+  "_id": {
+    "$oid": "67c9808f46f9974fd57f4533"
+  },
+  "serviceUser": {
+    "$oid": "67c97ba446f9974fd57f4476"
+  },
+  "medicationName": "Trazodone Hydrochloride",
+  "dosage": {
+    "amount": 27,
+    "unit": "mg"
+  },
+  "quantityInStock": 43,
+  "quantityPerDose": 2,
+  "dosesPerDay": 1,
+  "frequency": "Once daily ",
+  "startDate": {
+    "$date": "2025-03-06T00:00:00.000Z"
+  },
+  "endDate": null,
+  "prescribedBy": "G.P",
+  "isActive": true,
+  "updatedBy": {
+    "$oid": "67ad31646e053bcd1bf20315"
+  },
+  "lastUpdated": {
+    "$date": "2025-04-28T22:15:02.515Z"
+  },
+  "__v": 0,
+  "instructions": "This medication is to be taken 30 minutes before bed, as it helps the user to sleep better."
+},
+{
+  "_id": {
+    "$oid": "67f5344c1ee2f1cd030e1037"
+  },
+  "serviceUser": {
+    "$oid": "67b0f16ae4dacd8705e77331"
+  },
+  "medicationName": "Lorazepam",
+  "dosage": {
+    "amount": 5,
+    "unit": "mg"
+  },
+  "quantityInStock": 31,
+  "quantityPerDose": 1.1,
+  "dosesPerDay": 1,
+  "frequency": "Once daily ",
+  "startDate": {
+    "$date": "2025-04-08T00:00:00.000Z"
+  },
+  "endDate": null,
+  "prescribedBy": "Mental Health Clinic ",
+  "isActive": true,
+  "updatedBy": {
+    "$oid": "67ad31646e053bcd1bf20315"
+  },
+  "lastUpdated": {
+    "$date": "2025-06-11T18:41:25.673Z"
+  },
+  "__v": 0,
+  "instructions": "Lorazepam tablets and liquid start to work in around 20 to 30 minutes. ...\nThe most common side effect is feeling sleepy (drowsy) during the daytime.\nIt's not recommended to take lorazepam for longer than 4 weeks.\nIf lorazepam makes you feel sleepy, do not drive, ride a bike or use tools or machinery."
+},
+{
+  "_id": {
+    "$oid": "67f6e64b82a2785d31e8e58b"
+  },
+  "serviceUser": {
+    "$oid": "67b0f234e4dacd8705e77335"
+  },
+  "medicationName": "Paracetamol",
+  "dosage": {
+    "amount": 500,
+    "unit": "mg"
+  },
+  "quantityInStock": 80,
+  "quantityPerDose": 2,
+  "dosesPerDay": 2,
+  "frequency": "Twice daily",
+  "startDate": {
+    "$date": "2025-04-09T00:00:00.000Z"
+  },
+  "endDate": null,
+  "prescribedBy": "G.P",
+  "isActive": false,
+  "updatedBy": {
+    "$oid": "67fe758fd0476124130879b9"
+  },
+  "lastUpdated": {
+    "$date": "2025-04-15T15:37:02.813Z"
+  },
+  "__v": 0,
+  "instructions": "Pain killer"
+},
+{
+  "_id": {
+    "$oid": "67fe76fed047612413087a09"
+  },
+  "serviceUser": {
+    "$oid": "67b0f234e4dacd8705e77335"
+  },
+  "medicationName": "Methadone",
+  "dosage": {
+    "amount": 10,
+    "unit": "mg"
+  },
+  "quantityInStock": 48,
+  "quantityPerDose": 1,
+  "dosesPerDay": 1,
+  "frequency": "Once daily ",
+  "startDate": {
+    "$date": "2025-04-15T00:00:00.000Z"
+  },
+  "endDate": null,
+  "prescribedBy": "G.P",
+  "isActive": true,
+  "updatedBy": {
+    "$oid": "67ad31646e053bcd1bf20315"
+  },
+  "lastUpdated": {
+    "$date": "2025-04-28T19:10:01.354Z"
+  },
+  "__v": 0,
+  "instructions": "Methadone, a synthetic opioid agonist, serves primarily in managing opioid use disorder (OUD) through methadone maintenance therapy (MMT), alleviating cravings and withdrawal, and enabling individuals to stabilize their lives and pursue recovery. It can also be employed for chronic pain, though due to its risks, it's not a first-line treatment. Acting on opioid receptors and possessing a long half-life, methadone allows for once-daily dosing, minimizing withdrawal symptoms. However, it carries potential side effects, including constipation, sedation, and the serious risk of respiratory depression and QT prolongation. Careful monitoring by healthcare professionals is crucial, with individualized dosing and awareness of potential drug interactions and overdose risks. Due to the risk of QT prolongation, an ECG is often required before and during treatment. Naloxone is the antidote for overdose. Due to the risk of respiratory depression, patients should be educated on the signs of overdose."
+},
+{
+  "_id": {
+    "$oid": "683f505698dd954189836cee"
+  },
+  "serviceUser": {
+    "$oid": "67b0f234e4dacd8705e77335"
+  },
+  "medicationName": "Nitrazepam",
+  "dosage": {
+    "amount": 5,
+    "unit": "mg"
+  },
+  "quantityInStock": 50,
+  "quantityPerDose": 1,
+  "dosesPerDay": 1,
+  "frequency": "Once daily ",
+  "startDate": {
+    "$date": "2025-06-03T00:00:00.000Z"
+  },
+  "endDate": {
+    "$date": "2027-06-03T00:00:00.000Z"
+  },
+  "prescribedBy": "Mental Health Clinic",
+  "isActive": true,
+  "updatedBy": {
+    "$oid": "67ad31646e053bcd1bf20315"
+  },
+  "lastUpdated": {
+    "$date": "2025-06-03T19:43:18.293Z"
+  },
+  "__v": 0
+}]

@@ -1,0 +1,126 @@
+[{
+  "_id": {
+    "$oid": "67b0be573141a0532c7e70c8"
+  },
+  "name": "Diazepam",
+  "dosage": "2mg",
+  "manufacturer": "Dr. Reddys Labs SA.",
+  "notes": "Diazepam is a medication belonging to the benzodiazepine class, meaning it's a central nervous system depressant that slows down brain activity. It's available in various forms, including tablets, oral solutions, rectal gels, and injectable solutions.\n\nDiazepam is used to treat a variety of conditions. It helps relieve symptoms of anxiety disorders, such as excessive worry, tension, and restlessness. It also relaxes tense muscles and relieves muscle spasms, and it's used to control certain types of seizures. Additionally, diazepam helps reduce symptoms of alcohol withdrawal, such as tremors, agitation, and hallucinations. It's also used to help patients relax before medical or dental procedures as a pre-operative sedative.\n\nDiazepam works by increasing the activity of gamma-aminobutyric acid (GABA), a neurotransmitter that inhibits brain activity. This calming effect helps reduce anxiety, relax muscles, and prevent seizures.\n\nIt's important to be aware that diazepam has the potential for dependence, and long-term use can lead to habit formation. Common side effects include drowsiness, dizziness, and impaired coordination. It can also interact with other medications, especially other central nervous system depressants, such as alcohol and opioids. Because of these factors, it is crucial that diazepam is only taken under the strict direction of a medical professional. They can determine if diazepam is appropriate for you and provide guidance on its safe and effective use.",
+  "createdAt": {
+    "$date": "2025-02-15T16:18:31.559Z"
+  },
+  "updatedAt": {
+    "$date": "2025-02-15T16:18:31.559Z"
+  },
+  "__v": 0,
+  "form": "tablet",
+  "route": "oral"
+},
+{
+  "_id": {
+    "$oid": "67b0c0a93141a0532c7e70ce"
+  },
+  "name": "Trazodone Hydrochloride",
+  "dosage": "25mg",
+  "manufacturer": "Some Manufacturer",
+  "notes": "Trazodone hydrochloride is a medication primarily used as an antidepressant, classified as a serotonin modulator. It functions by affecting the balance of serotonin, a neurotransmitter in the brain that plays a crucial role in mood regulation. While its primary use is to treat major depressive disorder, it's also frequently prescribed off-label to address insomnia due to its sedative properties, and sometimes for anxiety. Trazodone's mechanism of action involves a complex interaction with serotonin receptors in the brain, both inhibiting serotonin reuptake and acting as an antagonist at certain serotonin receptors, which contributes to its antidepressant and sedative effects.\n\nA prominent side effect of trazodone is drowsiness, which is why it's commonly used to treat insomnia and is typically taken at night. Other potential side effects include dizziness, lightheadedness, nausea, and dry mouth. It's important to be aware of a rare but serious side effect known as priapism, a prolonged and painful erection. Trazodone can also interact with other medications, particularly other antidepressants and central nervous system depressants, so it's essential to inform your doctor about all medications you are taking.\n\nDue to the potential for side effects and drug interactions, it's crucial to use trazodone under the guidance of a healthcare professional. They can determine the appropriate dosage and monitor for potential adverse effects. It is also important to never abruptly stop taking this medication. A doctor should be consulted for a plan to wean off the medication, if necessary.\n\n",
+  "createdAt": {
+    "$date": "2025-02-15T16:28:25.061Z"
+  },
+  "updatedAt": {
+    "$date": "2025-02-15T16:28:25.061Z"
+  },
+  "__v": 0,
+  "form": "capsule",
+  "route": "oral"
+},
+{
+  "_id": {
+    "$oid": "67b7035bbe66f122f26b86a4"
+  },
+  "name": "Sertraline",
+  "dosage": "50 mg",
+  "manufacturer": "ACCORD HLTHCARE",
+  "notes": "Sertraline is a medication belonging to the class of drugs known as selective serotonin reuptake inhibitors (SSRIs). Its primary function is to treat various mental health conditions by increasing the levels of serotonin, a neurotransmitter, in the brain. It's commonly prescribed for \nmajor depressive disorder, obsessive-compulsive disorder (OCD), panic disorder, post-traumatic stress disorder (PTSD), social anxiety disorder, and premenstrual dysphoric disorder (PMDD). Essentially, sertraline helps to restore the chemical balance in the brain, leading to improved mood and reduced symptoms associated with these conditions.\n\nThe mechanism of action of sertraline revolves around its ability to inhibit the reuptake of serotonin. This means that it prevents the reabsorption of serotonin back into the nerve cells, thereby making more serotonin available in the synaptic cleft, the space between nerve cells. This increased availability of serotonin contributes to its therapeutic effects. While generally considered safe, sertraline can cause side effects, which may include nausea, insomnia, drowsiness, changes in appetite, and sexual dysfunction. It's important to note that it can take several weeks for sertraline to reach its full therapeutic effect.\n\nAs with any antidepressant, it is vital that sertraline is used under the close supervision of a healthcare professional. Dosage adjustments and monitoring for potential side effects are essential. Abruptly stopping sertraline can lead to withdrawal symptoms, so a gradual tapering of the dose is typically recommended when discontinuing the medication. Furthermore, it is important for doctors to monitor patients, especially younger patients, for any increase in suicidal thoughts or behaviors, particularly at the beginning of treatment or when dosage changes occur.\n\n",
+  "createdAt": {
+    "$date": "2025-02-20T10:26:35.425Z"
+  },
+  "updatedAt": {
+    "$date": "2025-02-20T10:26:35.425Z"
+  },
+  "__v": 0,
+  "form": "tablet",
+  "route": "oral"
+},
+{
+  "_id": {
+    "$oid": "67f534131ee2f1cd030e1027"
+  },
+  "name": "Lorazepam",
+  "dosage": "5mg",
+  "form": "tablet",
+  "route": "oral",
+  "manufacturer": "Teva Pharmaceutical Industries Ltd.",
+  "notes": "Lorazepam tablets and liquid start to work in around 20 to 30 minutes. ...\nThe most common side effect is feeling sleepy (drowsy) during the daytime.\nIt's not recommended to take lorazepam for longer than 4 weeks.\nIf lorazepam makes you feel sleepy, do not drive, ride a bike or use tools or machinery.",
+  "createdAt": {
+    "$date": "2025-04-08T14:34:59.541Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-08T14:34:59.541Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67f640ce6cbbab3c30c75434"
+  },
+  "name": "Paracetamol",
+  "dosage": "500mg",
+  "form": "tablet",
+  "route": "oral",
+  "manufacturer": "Dr. Reddys Labs SA.",
+  "notes": "Pain killer",
+  "createdAt": {
+    "$date": "2025-04-09T09:41:34.530Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-09T09:41:34.530Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67fe768cd0476124130879f7"
+  },
+  "name": "Methadone",
+  "dosage": "10mg",
+  "form": "tablet",
+  "route": "oral",
+  "manufacturer": "VISTAPHARM LLC",
+  "notes": "Methadone, a synthetic opioid agonist, serves primarily in managing opioid use disorder (OUD) through methadone maintenance therapy (MMT), alleviating cravings and withdrawal, and enabling individuals to stabilize their lives and pursue recovery. It can also be employed for chronic pain, though due to its risks, it's not a first-line treatment. Acting on opioid receptors and possessing a long half-life, methadone allows for once-daily dosing, minimizing withdrawal symptoms. However, it carries potential side effects, including constipation, sedation, and the serious risk of respiratory depression and QT prolongation. Careful monitoring by healthcare professionals is crucial, with individualized dosing and awareness of potential drug interactions and overdose risks. Due to the risk of QT prolongation, an ECG is often required before and during treatment. Naloxone is the antidote for overdose. Due to the risk of respiratory depression, patients should be educated on the signs of overdose.",
+  "createdAt": {
+    "$date": "2025-04-15T15:09:00.168Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-15T15:09:00.168Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "683f4fc998dd954189836cdc"
+  },
+  "name": "Nitrazepam",
+  "dosage": "5mg",
+  "form": "tablet",
+  "route": "oral",
+  "manufacturer": "\tA A H Pharmaceuticals Ltd",
+  "notes": "\nNitrazepam is a type of benzodiazepine drug. It is a powerful hypnotic drug which possesses strong sedative, anxiolytic, amnestic, anticonvulsant, and skeletal muscle relaxant properties. Nitrazepam shortens the time required to fall asleep and lengthens the duration of sleep. It is also useful for the management of myoclonic seizures.\n\n\nNitrazepam belongs to a group of medicines called benzodiazepines. This drug affects central benzodiazepine receptors, which are associated with inhibitory GABA (gamma amino butyric acid)receptors, leading to enhanced GABA binding activity. GABA is a major neurotransmitter in the brain, which causes somnolence, relaxation of muscles, a decrease in anxiety and general central nervous system depression. Nitrazepam has anticonvulsant properties that may be attributed to its ability to bind to voltage-dependent sodium channels. Sustained repetitive firing seems to be limited by benzodiazepines effect of slowing recovery of sodium channels from inactivation.",
+  "createdAt": {
+    "$date": "2025-06-03T19:40:57.210Z"
+  },
+  "updatedAt": {
+    "$date": "2025-06-03T19:40:57.210Z"
+  },
+  "__v": 0
+}]
