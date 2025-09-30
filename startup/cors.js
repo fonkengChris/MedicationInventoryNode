@@ -1,6 +1,11 @@
 module.exports = function (app) {
   app.use((req, res, next) => {
-    const allowedOrigins = ["http://127.0.0.1:5173", "http://localhost:5173"];
+    const allowedOrigins = [
+      "http://127.0.0.1:5173", 
+      "http://localhost:5173",
+      "https://med-tracker-pro.vercel.app/", // Replace with your actual frontend URL
+      "https://vercel.com/fonkengchris-projects/med-tracker-pro/2qbVmUDY5tarYRUS188M5PJiQrHh"  // Replace with your actual frontend URL
+    ];
     const origin = req.headers.origin;
 
     if (allowedOrigins.includes(origin)) {
