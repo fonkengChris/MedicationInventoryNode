@@ -38,6 +38,10 @@ const cleanData = (data) => {
       cleaned.serviceUser = cleaned.serviceUser.$oid;
     }
     
+    if (cleaned.group && cleaned.group.$oid) {
+      cleaned.group = cleaned.group.$oid;
+    }
+    
     // Convert dates
     if (cleaned.createdAt && cleaned.createdAt.$date) {
       cleaned.createdAt = new Date(cleaned.createdAt.$date);
