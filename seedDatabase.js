@@ -138,15 +138,58 @@ const seedServiceUsers = async () => {
   }
 };
 
-// Seed active medications
-const seedActiveMedications = async () => {
+// Seed active medications with service user ID mapping
+const seedActiveMedicationsWithMapping = async (serviceUserIdMap) => {
   try {
-    console.log('Seeding active medications...');
+    console.log('Seeding active medications with service user mapping...');
     const data = JSON.parse(fs.readFileSync(path.join(__dirname, 'backup_db', 'medication-inventory.activemedications.json'), 'utf8'));
-    const cleanedData = cleanData(data);
     
     // Clear existing active medications
     await ActiveMedication.deleteMany({});
+    
+    // Clean and map service user IDs
+    const cleanedData = data.map((med) => {
+      const cleaned = { ...med };
+      delete cleaned._id;
+      delete cleaned.__v;
+      
+      // Convert dates
+      if (cleaned.createdAt && cleaned.createdAt.$date) {
+        cleaned.createdAt = new Date(cleaned.createdAt.$date);
+      }
+      if (cleaned.updatedAt && cleaned.updatedAt.$date) {
+        cleaned.updatedAt = new Date(cleaned.updatedAt.$date);
+      }
+      if (cleaned.startDate && cleaned.startDate.$date) {
+        cleaned.startDate = new Date(cleaned.startDate.$date);
+      }
+      if (cleaned.endDate && cleaned.endDate.$date) {
+        cleaned.endDate = new Date(cleaned.endDate.$date);
+      }
+      if (cleaned.lastUpdated && cleaned.lastUpdated.$date) {
+        cleaned.lastUpdated = new Date(cleaned.lastUpdated.$date);
+      }
+      
+      // Convert updatedBy ObjectId
+      if (cleaned.updatedBy && cleaned.updatedBy.$oid) {
+        cleaned.updatedBy = cleaned.updatedBy.$oid;
+      }
+      
+      // Map old service user ID to new service user ID
+      if (cleaned.serviceUser && cleaned.serviceUser.$oid) {
+        const oldServiceUserId = cleaned.serviceUser.$oid;
+        const newServiceUserId = serviceUserIdMap[oldServiceUserId];
+        if (newServiceUserId) {
+          cleaned.serviceUser = newServiceUserId;
+          console.log(`Mapped service user ${oldServiceUserId} -> ${newServiceUserId} for medication ${cleaned.medicationName}`);
+        } else {
+          console.warn(`No mapping found for service user ${oldServiceUserId}, removing medication`);
+          return null;
+        }
+      }
+      
+      return cleaned;
+    }).filter(med => med !== null); // Only include medications with valid mapped service users
     
     // Insert new active medications
     const activeMedications = await ActiveMedication.insertMany(cleanedData);
@@ -183,8 +226,20 @@ const seedDatabase = async () => {
     console.log('Group ID mapping:', groupIdMap);
     
     // Update service users seed to use the new group IDs
-    await seedServiceUsersWithMapping(groupIdMap);
-    await seedActiveMedications();
+    const serviceUsers = await seedServiceUsersWithMapping(groupIdMap);
+    
+    // Create a mapping of old service user IDs to new service user IDs
+    const serviceUserIdMap = {};
+    const serviceUserData = JSON.parse(fs.readFileSync(path.join(__dirname, 'backup_db', 'medication-inventory.serviceusers.json'), 'utf8'));
+    serviceUserData.forEach((oldUser, index) => {
+      if (oldUser._id && oldUser._id.$oid && serviceUsers[index]) {
+        serviceUserIdMap[oldUser._id.$oid] = serviceUsers[index]._id.toString();
+      }
+    });
+    
+    console.log('Service User ID mapping:', serviceUserIdMap);
+    
+    await seedActiveMedicationsWithMapping(serviceUserIdMap);
     
     console.log('🎉 Database seeding completed successfully!');
     
