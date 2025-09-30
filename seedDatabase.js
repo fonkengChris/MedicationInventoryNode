@@ -42,6 +42,10 @@ const cleanData = (data) => {
       cleaned.group = cleaned.group.$oid;
     }
     
+    if (cleaned.updatedBy && cleaned.updatedBy.$oid) {
+      cleaned.updatedBy = cleaned.updatedBy.$oid;
+    }
+    
     // Convert dates
     if (cleaned.createdAt && cleaned.createdAt.$date) {
       cleaned.createdAt = new Date(cleaned.createdAt.$date);
@@ -61,6 +65,10 @@ const cleanData = (data) => {
     
     if (cleaned.endDate && cleaned.endDate.$date) {
       cleaned.endDate = new Date(cleaned.endDate.$date);
+    }
+    
+    if (cleaned.lastUpdated && cleaned.lastUpdated.$date) {
+      cleaned.lastUpdated = new Date(cleaned.lastUpdated.$date);
     }
     
     return cleaned;
