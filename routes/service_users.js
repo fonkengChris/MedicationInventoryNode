@@ -13,8 +13,13 @@ router.get("/", auth, async (req, res) => {
       options: { strictPopulate: false }
     });
     
-    // Filter out any service users with null groups to prevent frontend errors
-    const validServiceUsers = serviceUsers.filter(user => user.group !== null);
+    // Filter out any service users with null groups or invalid group objects
+    const validServiceUsers = serviceUsers.filter(user => {
+      return user.group !== null && 
+             user.group !== undefined && 
+             typeof user.group === 'object' &&
+             user.group._id;
+    });
     
     res.json(validServiceUsers);
   } catch (err) {
