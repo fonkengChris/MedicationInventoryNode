@@ -45,6 +45,18 @@ const activeMedicationSchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
+  administrationTimes: [
+    {
+      type: String,
+      validate: {
+        validator: function (value) {
+          return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
+        },
+        message: (props) =>
+          `${props.value} is not a valid administration time (HH:mm)`,
+      },
+    },
+  ],
   frequency: {
     type: String,
     required: true,

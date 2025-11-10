@@ -1,6 +1,5 @@
 const User = require("../models/User");
 const nodemailer = require("nodemailer");
-const FirebaseService = require("./firebaseService");
 const twilio = require("twilio");
 require("dotenv").config();
 
@@ -107,24 +106,6 @@ class NotificationService {
           }
         }
       }
-
-      // Send push notifications to users who have FCM tokens
-      const tokens = users
-        .filter((user) => user.fcmToken)
-        .map((user) => user.fcmToken);
-
-      if (tokens.length > 0) {
-        await FirebaseService.sendPushNotification(
-          tokens,
-          "Low Medication Stock Alert",
-          smsMessage,
-          {
-            type: "LOW_STOCK",
-            medicationId: medication._id.toString(),
-            daysRemaining: daysRemaining.toString(),
-          }
-        );
-      }
     } catch (error) {
       console.error("Failed to send low stock notification:", error);
       throw error;
@@ -181,24 +162,6 @@ class NotificationService {
             await this.sendSMS(user.phoneNumber, smsMessage);
           }
         }
-      }
-
-      // Send push notifications to users who have FCM tokens
-      const tokens = users
-        .filter((user) => user.fcmToken)
-        .map((user) => user.fcmToken);
-
-      if (tokens.length > 0) {
-        await FirebaseService.sendPushNotification(
-          tokens,
-          "Upcoming Appointment",
-          smsMessage,
-          {
-            type: "APPOINTMENT_REMINDER",
-            appointmentId: appointment._id.toString(),
-            dateTime: appointment.dateTime.toISOString(),
-          }
-        );
       }
     } catch (error) {
       console.error("Failed to send appointment notification:", error);

@@ -3,12 +3,14 @@ module.exports = function (app) {
     const allowedOrigins = [
       "http://127.0.0.1:5173", 
       "http://localhost:5173",
+      "http://127.0.0.1:3000",
+      "http://localhost:3000",
       "https://med-tracker-pro.vercel.app",
       "https://vercel.com/fonkengchris-projects/med-tracker-pro/2qbVmUDY5tarYRUS188M5PJiQrHh"
     ];
     const origin = req.headers.origin;
 
-    if (allowedOrigins.includes(origin)) {
+    if (origin && allowedOrigins.includes(origin)) {
       res.header("Access-Control-Allow-Origin", origin);
     }
 

@@ -27,6 +27,7 @@ const medicationUpdateSchema = new mongoose.Schema({
       "Name Change",
       "Dosage Change",
       "Frequency Change",
+      "Administration Times Change",
       "Quantity Per Dose Change",
       "Doses Per Day Change",
       "Prescriber Change",

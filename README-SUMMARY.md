@@ -241,3 +241,15 @@ node test-summary.js
 - Advanced filtering and sorting options
 - Trend analysis integration
 - Custom report templates # CI/CD Test - Thu Oct 16 04:16:11 PM BST 2025
+
+## Test Data Utility
+
+- **Generate Medication Updates**: Use `node scripts/generateMedicationUpdates.js --days 30 --per-med 6`
+- Optional flags:
+  - `--med-limit <count>`: limit the number of medications to process
+  - `--clear`: remove existing updates in the target date range before inserting
+  - `--dry-run`: preview how many updates would be generated without writing to the database
+- The script requires:
+  - `MONGODB_URI` configured in `.env`
+  - At least one `User` document (used as the `updatedBy` reference)
+  - Existing `ActiveMedication` records to attach updates to

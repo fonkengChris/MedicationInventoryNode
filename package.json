@@ -8,7 +8,10 @@
     "dev": "nodemon server.js",
     "prod": "pm2 start server.js",
     "seed": "node seedDatabase.js",
-    "seed-users": "node seedUsers.js"
+    "seed-users": "node seedUsers.js",
+    "test": "cross-env NODE_ENV=test jest",
+    "test:watch": "cross-env NODE_ENV=test jest --watch",
+    "test:coverage": "cross-env NODE_ENV=test jest --coverage"
   },
   "dependencies": {
     "axios": "^1.7.9",
@@ -17,7 +20,6 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.18.2",
-    "firebase-admin": "^13.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.6.3",
     "node-cron": "^3.0.3",
@@ -28,6 +30,10 @@
     "twilio": "^5.4.5"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^10.1.4",
+    "nodemon": "^3.0.1",
+    "supertest": "^7.1.1"
   }
 }

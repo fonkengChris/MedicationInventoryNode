@@ -8,6 +8,7 @@ const appointmentRoutes = require("../routes/appointments");
 const groupRoutes = require("../routes/groups");
 const summaryRoutes = require("../routes/summaries");
 const testRoutes = require("../routes/test");
+const marRoutes = require("../routes/mar");
 const express = require("express");
 
 module.exports = function (app) {
@@ -23,4 +24,5 @@ module.exports = function (app) {
   app.use("/api/groups", groupRoutes);
   app.use("/api/summaries", summaryRoutes);
   app.use("/api/test", testRoutes);
+  app.use("/api/mar", marRoutes);
 };

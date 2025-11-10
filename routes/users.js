@@ -241,20 +241,6 @@ router.post("/:id/change-password", auth, async (req, res) => {
   }
 });
 
-// Add this route to your existing users.js file
-router.post("/fcm-token", auth, async (req, res) => {
-  try {
-    const { fcmToken } = req.body;
-    const userId = await getUserIdFromToken(req);
-
-    await User.findByIdAndUpdate(userId, { fcmToken });
-
-    res.json({ message: "FCM token updated successfully" });
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
 // Debug route to check user groups - remove in production
 router.get("/debug/:id", auth, async (req, res) => {
   try {

@@ -197,6 +197,7 @@ router.post("/", [auth, adminAuth], async (req, res) => {
       quantityInStock: req.body.quantityInStock,
       quantityPerDose: req.body.quantityPerDose,
       dosesPerDay: req.body.dosesPerDay,
+      administrationTimes: req.body.administrationTimes,
       frequency: req.body.frequency,
       startDate: req.body.startDate,
       endDate: req.body.endDate,
@@ -410,6 +411,18 @@ router.put("/:id", [auth], async (req, res) => {
         newValue: req.body.frequency,
       };
       updateType = "Frequency Change";
+    }
+
+    if (
+      Array.isArray(req.body.administrationTimes) &&
+      JSON.stringify(req.body.administrationTimes) !==
+        JSON.stringify(medication.administrationTimes || [])
+    ) {
+      changes.administrationTimes = {
+        oldValue: medication.administrationTimes || [],
+        newValue: req.body.administrationTimes,
+      };
+      updateType = "Administration Times Change";
     }
 
     if (
