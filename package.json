@@ -9,6 +9,8 @@
     "prod": "pm2 start server.js",
     "seed": "node seedDatabase.js",
     "seed-users": "node seedUsers.js",
+    "generate-administrations": "node scripts/generateMedicationAdministrations.js",
+    "generate-changes": "node scripts/generateMedicationChanges.js",
     "test": "cross-env NODE_ENV=test jest",
     "test:watch": "cross-env NODE_ENV=test jest --watch",
     "test:coverage": "cross-env NODE_ENV=test jest --coverage"

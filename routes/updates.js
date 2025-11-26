@@ -6,16 +6,189 @@ const adminAuth = require("../middleware/adminAuth");
 const superAdminAuth = require("../middleware/superAdminAuth");
 const ActiveMedication = require("../models/active_medication");
 
+// Helper function to format updates
+const formatUpdates = async (updates) => {
+  return Promise.all(
+    updates.map(async (update) => {
+      // For old updates where medication name is missing
+      if (
+        update.medication &&
+        (!update.medication.medicationName ||
+          update.medication.medicationName === "Unknown Medication")
+      ) {
+        const medicationData = await ActiveMedication.findById(
+          update.medication._id
+        )
+          .select(
+            "medicationName quantityInStock quantityPerDose dosesPerDay"
+          )
+          .lean();
+
+        if (medicationData) {
+          return {
+            _id: update._id,
+            medication: {
+              _id: update.medication._id,
+              medicationName: medicationData.medicationName,
+              quantityInStock: medicationData.quantityInStock,
+              quantityPerDose: medicationData.quantityPerDose,
+              dosesPerDay: medicationData.dosesPerDay,
+              daysRemaining: Math.floor(
+                medicationData.quantityInStock /
+                  (medicationData.quantityPerDose *
+                    medicationData.dosesPerDay)
+              ),
+            },
+            updatedBy: {
+              _id: update.updatedBy._id,
+              username: update.updatedBy.username || "Unknown User",
+              email: update.updatedBy.email || "no-email",
+            },
+            updateType: update.updateType,
+            category: update.category,
+            changes: update.changes,
+            notes: update.notes,
+            timestamp: update.timestamp,
+          };
+        }
+      }
+
+      // For new updates or if medication lookup failed
+      return {
+        _id: update._id,
+        medication: {
+          _id: update.medication._id,
+          medicationName:
+            update.medication.medicationName || "Unknown Medication",
+          quantityInStock: update.medication.quantityInStock,
+          quantityPerDose: update.medication.quantityPerDose,
+          dosesPerDay: update.medication.dosesPerDay,
+          daysRemaining: update.medication.daysRemaining,
+        },
+        updatedBy: {
+          _id: update.updatedBy._id,
+          username: update.updatedBy.username || "Unknown User",
+          email: update.updatedBy.email || "no-email",
+        },
+        updateType: update.updateType,
+        category: update.category,
+        changes: update.changes,
+        notes: update.notes,
+        timestamp: update.timestamp,
+      };
+    })
+  );
+};
+
 // Get all updates - accessible to authenticated users
 router.get("/", auth, async (req, res) => {
   try {
-    const updates = await MedicationUpdate.find()
+    const query = {};
+    
+    // Filter by category if provided
+    if (req.query.category) {
+      query.category = req.query.category;
+    }
+    
+    const updates = await MedicationUpdate.find(query)
       .populate("medication", "name")
       .populate("updatedBy", "username email")
       .sort({ timestamp: -1 });
     res.json(updates);
   } catch (err) {
     console.error("Error fetching updates:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get quantitative updates only (stock/quantity changes)
+router.get("/quantitative", auth, async (req, res) => {
+  try {
+    const query = { category: "quantitative" };
+    
+    // Apply additional filters if provided
+    if (req.query.medicationId) {
+      if (req.query.medicationId === "null") {
+        query["medication._id"] = null;
+      } else {
+        query["medication._id"] = req.query.medicationId;
+      }
+    }
+    
+    if (req.query.userId) {
+      if (req.query.userId === "null") {
+        query.updatedBy = null;
+      } else {
+        query.updatedBy = req.query.userId;
+      }
+    }
+    
+    if (req.query.startDate && req.query.endDate) {
+      const endOfDay = new Date(req.query.endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      query.timestamp = {
+        $gte: new Date(req.query.startDate),
+        $lte: endOfDay,
+      };
+    }
+    
+    const updates = await MedicationUpdate.find(query)
+      .populate({
+        path: "updatedBy",
+        select: "_id username email",
+      })
+      .sort({ timestamp: -1 });
+
+    const formattedUpdates = await formatUpdates(updates);
+    res.json(formattedUpdates);
+  } catch (err) {
+    console.error("Error fetching quantitative updates:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get qualitative updates only (other changes)
+router.get("/qualitative", auth, async (req, res) => {
+  try {
+    const query = { category: "qualitative" };
+    
+    // Apply additional filters if provided
+    if (req.query.medicationId) {
+      if (req.query.medicationId === "null") {
+        query["medication._id"] = null;
+      } else {
+        query["medication._id"] = req.query.medicationId;
+      }
+    }
+    
+    if (req.query.userId) {
+      if (req.query.userId === "null") {
+        query.updatedBy = null;
+      } else {
+        query.updatedBy = req.query.userId;
+      }
+    }
+    
+    if (req.query.startDate && req.query.endDate) {
+      const endOfDay = new Date(req.query.endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      query.timestamp = {
+        $gte: new Date(req.query.startDate),
+        $lte: endOfDay,
+      };
+    }
+    
+    const updates = await MedicationUpdate.find(query)
+      .populate({
+        path: "updatedBy",
+        select: "_id username email",
+      })
+      .sort({ timestamp: -1 });
+
+    const formattedUpdates = await formatUpdates(updates);
+    res.json(formattedUpdates);
+  } catch (err) {
+    console.error("Error fetching qualitative updates:", err);
     res.status(500).json({ message: err.message });
   }
 });
@@ -158,10 +331,10 @@ router.get("/date-range", auth, async (req, res) => {
   }
 });
 
-// Get updates with multiple filters (medication, user, date range)
+// Get updates with multiple filters (medication, user, date range, category)
 router.get("/filtered", auth, async (req, res) => {
   try {
-    const { medicationId, userId, startDate, endDate } = req.query;
+    const { medicationId, userId, startDate, endDate, category } = req.query;
     
     // Build query object
     const query = {};
@@ -182,6 +355,10 @@ router.get("/filtered", auth, async (req, res) => {
       } else {
         query.updatedBy = userId;
       }
+    }
+    
+    if (category) {
+      query.category = category;
     }
     
     if (startDate && endDate) {

@@ -138,7 +138,7 @@ function formatStatus(status) {
     early: "Early",
     late: "Late",
     recorded: "Recorded",
-    missed: "Missed",
+    missed: "X - Missed",
     cancelled: "Cancelled",
     refused: "R - Refused",
     nausea: "N - Nausea/Vomiting",
@@ -303,7 +303,12 @@ function buildCellContent({
 
   const formattedDate = formatDate(date);
 
-  if (isSameDay(date, new Date())) {
+  // Allow today's administrations to show (but not future dates)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const cellDate = new Date(date);
+  cellDate.setHours(0, 0, 0, 0);
+  if (cellDate > today) {
     return "";
   }
 
@@ -429,7 +434,7 @@ function drawFooter(doc) {
 function drawKey(doc, y) {
   const legendLines = [
     "Codes:",
-    "R - Refused    N - Nausea/Vomiting    H - Hospital    L - On Leave",
+    "X - Missed    R - Refused    N - Nausea/Vomiting    H - Hospital    L - On Leave",
     "D - Destroyed    S - Sleeping    P - Pulse Abnormal    NR - Not Required    O - Other",
   ];
 
@@ -840,17 +845,69 @@ class MarService {
           AdministrationWindowService.formatWindow(window)
         );
 
+        // Create date range for the day to match any time within that day
+        const dayStart = new Date(date);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(date);
+        dayEnd.setHours(23, 59, 59, 999);
+
         const recordedAdministrations = await MedicationAdministration.find({
           medication: medication._id,
           serviceUser: serviceUserId,
-          scheduledDate: date,
+          scheduledDate: {
+            $gte: dayStart,
+            $lte: dayEnd,
+          },
         })
           .sort({ scheduledTime: 1 })
           .populate("administeredBy", "username email")
           .lean();
 
-        if (recordedAdministrations.length) {
-          administrations[medId][formattedDate] = recordedAdministrations;
+        // Check for missed windows (windows that have passed without administration)
+        const now = new Date();
+        const missedAdministrations = [];
+        
+        for (const window of medicationWindows) {
+          // Check if window has passed (windowEnd is in the past)
+          if (window.windowEnd < now) {
+            // Check if there's no recorded administration for this window
+            const hasRecorded = recordedAdministrations.some(
+              (admin) =>
+                admin.scheduledTime === window.scheduledTime &&
+                new Date(admin.scheduledDate).getTime() === date.getTime()
+            );
+            
+            if (!hasRecorded) {
+              // Create a virtual missed administration record
+              missedAdministrations.push({
+                medication: medication._id,
+                serviceUser: serviceUserId,
+                scheduledDate: date,
+                scheduledTime: window.scheduledTime,
+                administeredAt: window.windowEnd, // Use window end time as the "missed" timestamp
+                administeredBy: null, // No one administered it
+                quantity: 0,
+                status: "missed",
+                notes: "X - Missed: Administration window passed without recording",
+              });
+            }
+          }
+        }
+
+        // Combine recorded administrations with missed ones
+        const allAdministrations = [...recordedAdministrations, ...missedAdministrations];
+        
+        if (allAdministrations.length) {
+          // Sort by scheduled time
+          allAdministrations.sort((a, b) => {
+            if (a.scheduledTime && b.scheduledTime) {
+              return a.scheduledTime.localeCompare(b.scheduledTime);
+            }
+            if (a.scheduledTime) return -1;
+            if (b.scheduledTime) return 1;
+            return 0;
+          });
+          administrations[medId][formattedDate] = allAdministrations;
           continue;
         }
 
@@ -881,7 +938,27 @@ class MarService {
               notes: change.note,
             }));
         } else {
-          administrations[medId][formattedDate] = [];
+          // Check for missed windows even if no daily stock changes
+          const now = new Date();
+          const missedForEmptyDay = [];
+          
+          for (const window of medicationWindows) {
+            if (window.windowEnd < now) {
+              missedForEmptyDay.push({
+                medication: medication._id,
+                serviceUser: serviceUserId,
+                scheduledDate: date,
+                scheduledTime: window.scheduledTime,
+                administeredAt: window.windowEnd,
+                administeredBy: null,
+                quantity: 0,
+                status: "missed",
+                notes: "X - Missed: Administration window passed without recording",
+              });
+            }
+          }
+          
+          administrations[medId][formattedDate] = missedForEmptyDay;
         }
       }
     }
@@ -1033,4 +1110,3 @@ class MarService {
 }
 
 module.exports = MarService;
-

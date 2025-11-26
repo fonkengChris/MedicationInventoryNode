@@ -2,6 +2,131 @@ const express = require("express");
 const router = express.Router();
 const ActiveMedication = require("../models/active_medication");
 const MedicationUpdate = require("../models/medication_update");
+
+// Get the helper function
+const getCategoryFromUpdateType = MedicationUpdate.getCategoryFromUpdateType || ((updateType) => {
+  const quantitativeTypes = [
+    "MedStock Increase",
+    "MedStock Decrease",
+    "Quantity Per Dose Change",
+    "Doses Per Day Change",
+  ];
+  return quantitativeTypes.includes(updateType) ? "quantitative" : "qualitative";
+});
+
+// Helper function to generate user-friendly notes for quantitative updates
+function generateQuantitativeNote(updateType, changes) {
+  const formatValue = (value) => {
+    if (value === null || value === undefined) return "not set";
+    if (typeof value === "number") return String(value);
+    if (typeof value === "object") {
+      if (value.amount && value.unit) return `${value.amount} ${value.unit}`;
+      if (Array.isArray(value)) return value.join(", ");
+      return JSON.stringify(value);
+    }
+    return String(value);
+  };
+
+  switch (updateType) {
+    case "MedStock Increase":
+      const increaseAmount = changes.quantityInStock?.newValue - changes.quantityInStock?.oldValue;
+      const newStock = changes.quantityInStock?.newValue;
+      const oldStock = changes.quantityInStock?.oldValue;
+      return `Stock increased by ${increaseAmount} units (from ${oldStock} to ${newStock} units).`;
+    
+    case "MedStock Decrease":
+      const decreaseAmount = changes.quantityInStock?.oldValue - changes.quantityInStock?.newValue;
+      const decreasedNewStock = changes.quantityInStock?.newValue;
+      const decreasedOldStock = changes.quantityInStock?.oldValue;
+      return `Stock decreased by ${decreaseAmount} units (from ${decreasedOldStock} to ${decreasedNewStock} units).`;
+    
+    case "Quantity Per Dose Change":
+      const oldQtyPerDose = formatValue(changes.quantityPerDose?.oldValue);
+      const newQtyPerDose = formatValue(changes.quantityPerDose?.newValue);
+      const oldDaysRemaining = changes.daysRemaining?.oldValue;
+      const newDaysRemaining = changes.daysRemaining?.newValue;
+      return `Quantity per dose changed from ${oldQtyPerDose} to ${newQtyPerDose}. Days remaining updated from ${oldDaysRemaining} to ${newDaysRemaining} days.`;
+    
+    case "Doses Per Day Change":
+      const oldDosesPerDay = formatValue(changes.dosesPerDay?.oldValue);
+      const newDosesPerDay = formatValue(changes.dosesPerDay?.newValue);
+      const oldDaysRemainingDose = changes.daysRemaining?.oldValue;
+      const newDaysRemainingDose = changes.daysRemaining?.newValue;
+      return `Daily dose frequency changed from ${oldDosesPerDay} to ${newDosesPerDay} doses per day. Days remaining updated from ${oldDaysRemainingDose} to ${newDaysRemainingDose} days.`;
+    
+    default:
+      return `Stock or quantity details have been updated.`;
+  }
+}
+
+// Helper function to generate user-friendly notes for qualitative updates
+function generateQualitativeNote(updateType, changes) {
+  const formatValue = (value) => {
+    if (value === null || value === undefined) return "not set";
+    if (typeof value === "object") {
+      if (value.amount && value.unit) return `${value.amount} ${value.unit}`;
+      if (Array.isArray(value)) return value.join(", ");
+      if (value.name) return value.name;
+      return JSON.stringify(value);
+    }
+    return String(value);
+  };
+
+  switch (updateType) {
+    case "New Medication":
+      return `New medication "${formatValue(changes.medicationName?.newValue)}" has been added to the system.`;
+    
+    case "Name Change":
+      return `Medication name changed from "${formatValue(changes.medicationName?.oldValue)}" to "${formatValue(changes.medicationName?.newValue)}".`;
+    
+    case "Dosage Change":
+      return `Dosage adjusted from ${formatValue(changes.dosage?.oldValue)} to ${formatValue(changes.dosage?.newValue)}.`;
+    
+    case "Frequency Change":
+      return `Administration frequency changed from "${formatValue(changes.frequency?.oldValue)}" to "${formatValue(changes.frequency?.newValue)}".`;
+    
+    case "Administration Times Change":
+      const oldTimes = Array.isArray(changes.administrationTimes?.oldValue) 
+        ? changes.administrationTimes.oldValue.join(", ") 
+        : formatValue(changes.administrationTimes?.oldValue);
+      const newTimes = Array.isArray(changes.administrationTimes?.newValue) 
+        ? changes.administrationTimes.newValue.join(", ") 
+        : formatValue(changes.administrationTimes?.newValue);
+      return `Administration times updated from ${oldTimes} to ${newTimes}.`;
+    
+    case "Prescriber Change":
+      return `Prescriber changed from "${formatValue(changes.prescribedBy?.oldValue)}" to "${formatValue(changes.prescribedBy?.newValue)}".`;
+    
+    case "Service User Change":
+      return `Service user changed from "${formatValue(changes.serviceUser?.oldValue)}" to "${formatValue(changes.serviceUser?.newValue)}".`;
+    
+    case "Instructions Change":
+      const oldInstructions = formatValue(changes.instructions?.oldValue) || "no instructions";
+      const newInstructions = formatValue(changes.instructions?.newValue) || "no instructions";
+      if (oldInstructions === "no instructions") {
+        return `Administration instructions added: "${newInstructions}".`;
+      }
+      return `Administration instructions updated. Previous: "${oldInstructions}". New: "${newInstructions}".`;
+    
+    case "Activated":
+      return "Medication has been activated and is now available for administration.";
+    
+    case "Deactivated":
+      return "Medication has been temporarily deactivated and is no longer available for administration.";
+    
+    case "Deleted":
+      return "Medication has been permanently removed from the system.";
+    
+    case "Form Change":
+      return `Medication form changed from "${formatValue(changes.form?.oldValue)}" to "${formatValue(changes.form?.newValue)}".`;
+    
+    case "Route Change":
+      return `Administration route changed from "${formatValue(changes.route?.oldValue)}" to "${formatValue(changes.route?.newValue)}".`;
+    
+    default:
+      return `Medication details have been updated.`;
+  }
+}
 const DailyStock = require("../models/daily_stock");
 const DailyStockService = require("../services/dailyStockService");
 const auth = require("../middleware/auth");
@@ -209,6 +334,15 @@ router.post("/", [auth, adminAuth], async (req, res) => {
     const newMedication = await medication.save();
 
     // Create update record with proper medication data
+    const updateType = "New Medication";
+    const changes = {
+      medicationName: {
+        oldValue: null,
+        newValue: req.body.medicationName,
+      },
+    };
+    const notes = generateQualitativeNote(updateType, changes);
+    
     const update = new MedicationUpdate({
       medication: {
         _id: newMedication._id,
@@ -222,13 +356,10 @@ router.post("/", [auth, adminAuth], async (req, res) => {
         ),
       },
       updatedBy: userId,
-      updateType: "New Medication",
-      changes: {
-        medicationName: {
-          oldValue: null,
-          newValue: req.body.medicationName,
-        },
-      },
+      updateType: updateType,
+      category: getCategoryFromUpdateType(updateType),
+      changes: changes,
+      notes: notes,
     });
 
     await update.save();
@@ -361,9 +492,21 @@ router.put("/:id", [auth], async (req, res) => {
       req.body.quantityPerDose !== undefined &&
       req.body.quantityPerDose !== oldValues.quantityPerDose
     ) {
+      const oldDaysRemaining = Math.floor(
+        medication.quantityInStock /
+          (oldValues.quantityPerDose * medication.dosesPerDay)
+      );
+      const newDaysRemaining = Math.floor(
+        medication.quantityInStock /
+          (req.body.quantityPerDose * medication.dosesPerDay)
+      );
       changes.quantityPerDose = {
         oldValue: oldValues.quantityPerDose,
         newValue: req.body.quantityPerDose,
+      };
+      changes.daysRemaining = {
+        oldValue: oldDaysRemaining,
+        newValue: newDaysRemaining,
       };
       updateType = "Quantity Per Dose Change";
     }
@@ -372,9 +515,21 @@ router.put("/:id", [auth], async (req, res) => {
       req.body.dosesPerDay !== undefined &&
       req.body.dosesPerDay !== oldValues.dosesPerDay
     ) {
+      const oldDaysRemaining = Math.floor(
+        medication.quantityInStock /
+          (medication.quantityPerDose * oldValues.dosesPerDay)
+      );
+      const newDaysRemaining = Math.floor(
+        medication.quantityInStock /
+          (medication.quantityPerDose * req.body.dosesPerDay)
+      );
       changes.dosesPerDay = {
         oldValue: oldValues.dosesPerDay,
         newValue: req.body.dosesPerDay,
+      };
+      changes.daysRemaining = {
+        oldValue: oldDaysRemaining,
+        newValue: newDaysRemaining,
       };
       updateType = "Doses Per Day Change";
     }
@@ -459,6 +614,19 @@ router.put("/:id", [auth], async (req, res) => {
 
     const updatedMedication = await medication.save();
 
+    // Generate notes based on update type
+    let notes = undefined;
+    if (updateType.includes("MedStock") || updateType === "Quantity Per Dose Change" || updateType === "Doses Per Day Change") {
+      // Quantitative updates: use user-provided note if available (and not empty), otherwise generate one
+      const userNote = req.body.stockChangeNote?.trim();
+      notes = userNote && userNote.length > 0 
+        ? userNote 
+        : generateQuantitativeNote(updateType, changes);
+    } else {
+      // Qualitative updates get user-friendly generated notes
+      notes = generateQualitativeNote(updateType, changes);
+    }
+
     // Create update record
     const update = new MedicationUpdate({
       medication: {
@@ -474,10 +642,9 @@ router.put("/:id", [auth], async (req, res) => {
       },
       updatedBy: userId,
       updateType: updateType,
+      category: getCategoryFromUpdateType(updateType),
       changes: changes,
-      notes: updateType.includes("MedStock")
-        ? req.body.stockChangeNote
-        : undefined, // Add note for stock changes
+      notes: notes,
     });
 
     await update.save();
@@ -515,6 +682,15 @@ router.put("/:id/deactivate", [auth, adminAuth], async (req, res) => {
     const updatedMedication = await medication.save();
 
     // Create update record with new schema format
+    const updateType = "Deactivated";
+    const changes = {
+      isActive: {
+        oldValue: true,
+        newValue: false,
+      },
+    };
+    const notes = generateQualitativeNote(updateType, changes);
+    
     const update = new MedicationUpdate({
       medication: {
         _id: medication._id,
@@ -528,13 +704,10 @@ router.put("/:id/deactivate", [auth, adminAuth], async (req, res) => {
         ),
       },
       updatedBy: userId,
-      updateType: "Deactivated",
-      changes: {
-        isActive: {
-          oldValue: true,
-          newValue: false,
-        },
-      },
+      updateType: updateType,
+      category: getCategoryFromUpdateType(updateType),
+      changes: changes,
+      notes: notes,
     });
 
     await update.save();
@@ -565,6 +738,15 @@ router.delete("/:id", [auth, superAdminAuth], async (req, res) => {
     }
 
     // Create update record with proper medication data
+    const updateType = "Deleted";
+    const changes = {
+      status: {
+        oldValue: "active",
+        newValue: "deleted",
+      },
+    };
+    const notes = generateQualitativeNote(updateType, changes);
+    
     const update = new MedicationUpdate({
       medication: {
         _id: medication._id,
@@ -578,13 +760,10 @@ router.delete("/:id", [auth, superAdminAuth], async (req, res) => {
         ),
       },
       updatedBy: userId,
-      updateType: "Deleted",
-      changes: {
-        status: {
-          oldValue: "active",
-          newValue: "deleted",
-        },
-      },
+      updateType: updateType,
+      category: getCategoryFromUpdateType(updateType),
+      changes: changes,
+      notes: notes,
     });
 
     await update.save();

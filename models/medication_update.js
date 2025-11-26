@@ -1,6 +1,17 @@
 const mongoose = require("mongoose");
 const ActiveMedication = require("./active_medication");
 
+// Helper function to determine category based on updateType
+function getCategoryFromUpdateType(updateType) {
+  const quantitativeTypes = [
+    "MedStock Increase",
+    "MedStock Decrease",
+    "Quantity Per Dose Change",
+    "Doses Per Day Change",
+  ];
+  return quantitativeTypes.includes(updateType) ? "quantitative" : "qualitative";
+}
+
 const medicationUpdateSchema = new mongoose.Schema({
   medication: {
     type: {
@@ -38,8 +49,16 @@ const medicationUpdateSchema = new mongoose.Schema({
       "Activated",
       "Deactivated",
       "Deleted",
+      "Other Change",
     ],
     required: true,
+  },
+  category: {
+    type: String,
+    enum: ["quantitative", "qualitative"],
+    default: function() {
+      return getCategoryFromUpdateType(this.updateType);
+    },
   },
   changes: {
     type: Map,
@@ -62,6 +81,7 @@ const medicationUpdateSchema = new mongoose.Schema({
 // Add indexes for common queries
 medicationUpdateSchema.index({ medication: 1, timestamp: -1 });
 medicationUpdateSchema.index({ updatedBy: 1, timestamp: -1 });
+medicationUpdateSchema.index({ category: 1, timestamp: -1 });
 
 // Helper function to fetch medication data
 async function fetchMedicationData(medicationId) {
@@ -150,4 +170,9 @@ medicationUpdateSchema.set("toJSON", {
   },
 });
 
-module.exports = mongoose.model("MedicationUpdate", medicationUpdateSchema);
+// Create the model
+const MedicationUpdate = mongoose.model("MedicationUpdate", medicationUpdateSchema);
+
+// Export both the model and the helper function
+module.exports = MedicationUpdate;
+module.exports.getCategoryFromUpdateType = getCategoryFromUpdateType;

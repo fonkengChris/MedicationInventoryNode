@@ -10,6 +10,17 @@ const ActiveMedication = require("../models/active_medication");
 const MedicationUpdate = require("../models/medication_update");
 const User = require("../models/User");
 
+// Get the helper function with fallback
+const getCategoryFromUpdateType = MedicationUpdate.getCategoryFromUpdateType || ((updateType) => {
+  const quantitativeTypes = [
+    "MedStock Increase",
+    "MedStock Decrease",
+    "Quantity Per Dose Change",
+    "Doses Per Day Change",
+  ];
+  return quantitativeTypes.includes(updateType) ? "quantitative" : "qualitative";
+});
+
 const args = process.argv.slice(2);
 
 const getFlagValue = (flag, defaultValue) => {
@@ -385,6 +396,7 @@ const main = async () => {
           },
           updatedBy: randomChoice(userQuery)._id,
           updateType: result.updateType,
+          category: getCategoryFromUpdateType(result.updateType),
           changes: result.changes,
           notes: result.notes,
           timestamp: randomDateBetween(startDate, endDate),

@@ -43,7 +43,26 @@ const medicationAdministrationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["on-time", "early", "late", "missed", "cancelled"],
+      enum: [
+        // Timing statuses
+        "on-time",
+        "early",
+        "late",
+        "recorded",
+        "missed",
+        "cancelled",
+        // MAR status codes
+        "refused",
+        "nausea",
+        "nausea_vomiting",
+        "hospital",
+        "on_leave",
+        "destroyed",
+        "sleeping",
+        "pulse_abnormal",
+        "not_required",
+        "other",
+      ],
       default: "on-time",
     },
     notes: {
